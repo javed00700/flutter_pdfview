@@ -89,6 +89,7 @@
     BOOL _autoSpacing;
     PDFPage* _defaultPage;
     BOOL _defaultPageSet;
+    UILabel* _pageCountLabel; // Add a label to display page count
 }
 
 - (instancetype)initWithFrame:(CGRect)frame
@@ -166,26 +167,7 @@
             });
         }
         
-        if (@available(iOS 11.0, *)) {
-    UIScrollView *_scrollView;
 
-    for (id subview in _pdfView.subviews) {
-        if ([subview isKindOfClass:[UIScrollView class]]) {
-            _scrollView = subview;
-        }
-    }
-
-    _scrollView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
-
-    if (@available(iOS 13.0, *)) {
-        _scrollView.automaticallyAdjustsScrollIndicatorInsets = NO;
-    }
-
-    // Increase scrollbar width by adjusting contentInset
-    UIEdgeInsets newScrollIndicatorInsets = _scrollView.scrollIndicatorInsets;
-    newScrollIndicatorInsets.right += 5; // Adjust the value as needed to increase the width
-    _scrollView.scrollIndicatorInsets = newScrollIndicatorInsets;
-}
         // if (@available(iOS 11.0, *)) {
         //     UIScrollView *_scrollView;
 
@@ -201,11 +183,39 @@
         //     }
         // }
         
+        if (@available(iOS 11.0, *)) {
+        UIScrollView *_scrollView;
+
+        for (id subview in _pdfView.subviews) {
+            if ([subview isKindOfClass:[UIScrollView class]]) {
+                _scrollView = subview;
+            }
+        }
+
+        _scrollView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
+        if (@available(iOS 13.0, *)) {
+            _scrollView.automaticallyAdjustsScrollIndicatorInsets = NO;
+        }
+
+        // Add a label to display the page count on the scrollbar
+        _pageCountLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 100, 20)];
+        _pageCountLabel.textColor = [UIColor blackColor];
+        _pageCountLabel.textAlignment = NSTextAlignmentCenter;
+        [_scrollView addSubview:_pageCountLabel];
+    }
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handlePageChanged:) name:PDFViewPageChangedNotification object:_pdfView];
         [self addSubview:_pdfView];
         
     }
     return self;
+}
+
+- (void)scrollViewDidScroll:(UIScrollView *)scrollView {
+    // Update the label with the current page count
+    NSInteger currentPage = [_pdfView.document indexForPage:_pdfView.currentPage];
+    NSInteger pageCount = [_pdfView.document pageCount];
+
+    _pageCountLabel.text = [NSString stringWithFormat:@"%ld / %ld", (long)(currentPage + 1), (long)pageCount];
 }
 
 - (void)layoutSubviews {
