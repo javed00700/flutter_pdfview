@@ -167,19 +167,39 @@
         }
         
         if (@available(iOS 11.0, *)) {
-            UIScrollView *_scrollView;
+    UIScrollView *_scrollView;
 
-            for (id subview in _pdfView.subviews) {
-                if ([subview isKindOfClass: [UIScrollView class]]) {
-                    _scrollView = subview;
-                }
-            }
-            
-            _scrollView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
-            if (@available(iOS 13.0, *)) {
-                _scrollView.automaticallyAdjustsScrollIndicatorInsets = NO;
-            }
+    for (id subview in _pdfView.subviews) {
+        if ([subview isKindOfClass:[UIScrollView class]]) {
+            _scrollView = subview;
         }
+    }
+
+    _scrollView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
+
+    if (@available(iOS 13.0, *)) {
+        _scrollView.automaticallyAdjustsScrollIndicatorInsets = NO;
+    }
+
+    // Increase scrollbar width by adjusting contentInset
+    UIEdgeInsets newScrollIndicatorInsets = _scrollView.scrollIndicatorInsets;
+    newScrollIndicatorInsets.right += 5; // Adjust the value as needed to increase the width
+    _scrollView.scrollIndicatorInsets = newScrollIndicatorInsets;
+}
+        // if (@available(iOS 11.0, *)) {
+        //     UIScrollView *_scrollView;
+
+        //     for (id subview in _pdfView.subviews) {
+        //         if ([subview isKindOfClass: [UIScrollView class]]) {
+        //             _scrollView = subview;
+        //         }
+        //     }
+            
+        //     _scrollView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
+        //     if (@available(iOS 13.0, *)) {
+        //         _scrollView.automaticallyAdjustsScrollIndicatorInsets = NO;
+        //     }
+        // }
         
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handlePageChanged:) name:PDFViewPageChangedNotification object:_pdfView];
         [self addSubview:_pdfView];
