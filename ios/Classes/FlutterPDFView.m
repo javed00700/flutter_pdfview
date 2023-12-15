@@ -1,12 +1,7 @@
 // Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-// Copyright 2018 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
 #import "FlutterPDFView.h"
-#import <QuartzCore/QuartzCore.h>
 
 @implementation FLTPDFViewFactory {
     NSObject<FlutterBinaryMessenger>* _messenger;
@@ -47,7 +42,7 @@
                     arguments:(id _Nullable)args
               binaryMessenger:(NSObject<FlutterBinaryMessenger>*)messenger {
     self = [super init];
-    _pdfView = [[FLTPDFView alloc] initWithFrame:frame arguments:args controller:self];
+    _pdfView = [[FLTPDFView new] initWithFrame:frame arguments:args controler:self];
     _viewId = viewId;
     
     NSString* channelName = [NSString stringWithFormat:@"plugins.endigo.io/pdfview_%lld", viewId];
@@ -85,7 +80,7 @@
 @end
 
 @implementation FLTPDFView {
-    FLTPDFViewController* _controller;
+    FLTPDFViewController* _controler;
     PDFView* _pdfView;
     NSNumber* _pageCount;
     NSNumber* _currentPage;
@@ -94,16 +89,15 @@
     BOOL _autoSpacing;
     PDFPage* _defaultPage;
     BOOL _defaultPageSet;
-    UIView* _scrollbar;
 }
 
 - (instancetype)initWithFrame:(CGRect)frame
                     arguments:(id _Nullable)args
-                    controller:(nonnull FLTPDFViewController *)controller {
+                    controler:(nonnull FLTPDFViewController *)controler {
     if ([super init]) {
-        _controller = controller;
+        _controler = controler;
         
-        _pdfView = [[PDFView alloc] initWithFrame:frame];
+        _pdfView = [[PDFView alloc] initWithFrame: frame];
         _pdfView.delegate = self;
                 
         _autoSpacing = [args[@"autoSpacing"] boolValue];
@@ -127,7 +121,7 @@
 
 
         if (document == nil) {
-            [_controller invokeChannelMethod:@"onError" arguments:@{@"error" : @"cannot create document: File not in PDF format or corrupted."}];
+            [_controler invokeChannelMethod:@"onError" arguments:@{@"error" : @"cannot create document: File not in PDF format or corrupted."}];
         } else {
             _pdfView.autoresizesSubviews = true;
             _pdfView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
@@ -187,22 +181,9 @@
             }
         }
         
-        // Add a UIScrollView to enable scrolling
-        UIScrollView *scrollView = [[UIScrollView alloc] initWithFrame:frame];
-        [scrollView addSubview:_pdfView];
-        scrollView.contentSize = _pdfView.frame.size;
-        [self addSubview:scrollView];
-
-        // Add a custom vertical scrollbar
-        _scrollbar = [[UIView alloc] initWithFrame:CGRectMake(CGRectGetMaxX(frame) - 10, 0, 10, CGRectGetHeight(frame))];
-        _scrollbar.backgroundColor = [UIColor grayColor];
-        _scrollbar.alpha = 0.7;
-        [self addSubview:_scrollbar];
-
-        // Add an observer for contentOffset changes in the UIScrollView
-        [scrollView addObserver:self forKeyPath:@"contentOffset" options:NSKeyValueObservingOptionNew context:nil];
-        
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handlePageChanged:) name:PDFViewPageChangedNotification object:_pdfView];
+        [self addSubview:_pdfView];
+        
     }
     return self;
 }
@@ -225,6 +206,7 @@
 - (UIView*)view {
     return _pdfView;
 }
+
 
 - (void)getPageCount:(FlutterMethodCall*)call result:(FlutterResult)result {
     _pageCount = [NSNumber numberWithUnsignedLong: [[_pdfView document] pageCount]];
@@ -249,11 +231,11 @@
 }
 
 -(void)handlePageChanged:(NSNotification*)notification {
-    [_controller invokeChannelMethod:@"onPageChanged" arguments:@{@"page" : [NSNumber numberWithUnsignedLong: [_pdfView.document indexForPage: _pdfView.currentPage]], @"total" : [NSNumber numberWithUnsignedLong: [_pdfView.document pageCount]]}];
+    [_controler invokeChannelMethod:@"onPageChanged" arguments:@{@"page" : [NSNumber numberWithUnsignedLong: [_pdfView.document indexForPage: _pdfView.currentPage]], @"total" : [NSNumber numberWithUnsignedLong: [_pdfView.document pageCount]]}];
 }
 
 -(void)handleRenderCompleted: (NSNumber*)pages {
-    [_controller invokeChannelMethod:@"onRender" arguments:@{@"pages" : pages}];
+    [_controler invokeChannelMethod:@"onRender" arguments:@{@"pages" : pages}];
 }
 
 - (void)PDFViewWillClickOnLink:(PDFView *)sender
@@ -261,7 +243,7 @@
     if (!_preventLinkNavigation){
         [[UIApplication sharedApplication] openURL:url];
     }
-    [_controller invokeChannelMethod:@"onLinkHandler" arguments:url.absoluteString];
+    [_controler invokeChannelMethod:@"onLinkHandler" arguments:url.absoluteString];
 }
 
 - (void) onDoubleTap: (UITapGestureRecognizer *)recognizer {
