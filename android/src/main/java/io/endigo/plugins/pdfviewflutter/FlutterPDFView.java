@@ -49,6 +49,9 @@ public class FlutterPDFView implements PlatformView, MethodCallHandler {
           config = pdfView.fromBytes(data);
         }
         if (config != null) {
+            if(getBoolean(params, "scrollHandle")){
+                config.scrollHandle(new DefaultScrollHandle(context));
+            }
             config
                     .enableSwipe(getBoolean(params, "enableSwipe"))
                     .swipeHorizontal(getBoolean(params, "swipeHorizontal"))
@@ -93,8 +96,7 @@ public class FlutterPDFView implements PlatformView, MethodCallHandler {
                     methodChannel.invokeMethod("onRender", args);
                 }
             }).enableDoubletap(true).defaultPage(getInt(params, "defaultPage")).load();
-            if(getBoolean(params, "scrollHandle"))
-                config.scrollHandle(new DefaultScrollHandle(context));
+
         }
     }
 
