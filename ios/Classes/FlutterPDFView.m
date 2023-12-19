@@ -51,7 +51,6 @@
     [_channel setMethodCallHandler:^(FlutterMethodCall* call, FlutterResult result) {
         [weakSelf onMethodCall:call result:result];
     }];
-
     return self;
 }
 
